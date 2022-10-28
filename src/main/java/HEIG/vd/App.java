@@ -1,4 +1,4 @@
-package org.example;
+package HEIG.vd;
 
 
 import com.amazonaws.services.s3.AmazonS3;
