@@ -1,22 +1,11 @@
 package HEIG.vd;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+public class AwsBucketManagerImpl {
+    public static void main(String[] args) {
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.List;
+        AwsCloudClient client = new AwsCloudClient();
 
-import static com.amazonaws.regions.Regions.EU_WEST_2;
+        client.dataObject.ListBuckets();
 
-
-public class AwsBucketManagerImpl
-{
-
+    }
 }
