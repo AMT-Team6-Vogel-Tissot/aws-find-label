@@ -7,5 +7,10 @@ public class AwsBucketManagerImpl {
 
         client.dataObject.ListBuckets();
 
+        System.out.println(client.dataObject.existObject("amt.team06.diduno.education","test"));
+        System.out.println(client.dataObject.existBucket("amt.team06.diduno.education"));
+
+        client.dataObject.ListObjects("amt.team06.diduno.education");
+
     }
 }
