@@ -5,7 +5,10 @@ import HEIG.vd.interfaces.IDataObjectHelper;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
+
 
 public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
@@ -15,8 +18,8 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         this.profile = profile;
     }
     @Override
-    public void create(String objectName) {
-
+    public void create(String objectName, Path path) {
+        profile.putObject("amt.team06.diduno.education", objectName, new File(path.toString()));
     }
 
     public boolean existBucket(String name){
