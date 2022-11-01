@@ -1,73 +1,53 @@
 package HEIG.vd;
 
 import HEIG.vd.interfaces.IDataObjectHelper;
-import com.amazonaws.AmazonServiceException;
+
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.*;
-
-import static com.amazonaws.regions.Regions.EU_WEST_2;
+import java.util.List;
 
 public class AwsDataObjectHelperImpl implements IDataObjectHelper {
+
+    AmazonS3 profile;
+
+    public AwsDataObjectHelperImpl(AmazonS3 profile){
+        this.profile = profile;
+    }
     @Override
     public void create(String objectName) {
 
     }
 
-    static public boolean isObjectExist(AmazonS3 s3, String bucketUrl, String objectName){
-        return s3.doesObjectExist(bucketUrl, objectName);
+    public boolean existBucket(String name){
+        return profile.doesBucketExistV2(name);
     }
 
-    public static boolean isBucketExist(AmazonS3 s3, String bucketUrl) {
-        return s3.doesBucketExistV2(bucketUrl);
-
+    public boolean existObject(String nameBucket, String nameObject){
+        return profile.doesObjectExist(nameBucket, nameObject);
     }
 
-    private String bucketUrl;
-    AmazonS3 cloudClient;
-
-    AwsDataObjectHelperImpl(String bucketUrl){
-        this.bucketUrl = bucketUrl;
-        cloudClient = AmazonS3ClientBuilder.standard()
-                .withRegion(EU_WEST_2)
-                .build();
-
-    }
-
-    public void getInfo(){
-        System.out.print(this.bucketUrl);
-        System.out.print(cloudClient);
-    }
-
-    public boolean exists(String url){
-        if(url.contains("/")){
-            String objectName = url.substring(url.lastIndexOf("/") + 1);
-            return AwsDataObjectHelperImpl.isObjectExist(cloudClient, bucketUrl, objectName);
-        } else {
-            return AwsDataObjectHelperImpl.isBucketExist(cloudClient, bucketUrl);
-        }
-
-    }
-
-    public void createObject(String bucketUrl){
-        if(!exists(bucketUrl)){
-            try {
-                cloudClient.createBucket(bucketUrl);
-            } catch (AmazonS3Exception e) {
-                System.err.println(e.getErrorMessage());
-            }
+    public void ListBuckets() {
+        List<Bucket> buckets = profile.listBuckets();
+        System.out.println("Your {S3} buckets are:");
+        for (Bucket b : buckets) {
+            System.out.println("* " + b.getName());
         }
     }
 
-    public void createObject(String objectUrl, String path){
+    public void ListObjects(String nameBucket){
+
+        ObjectListing objects = profile.listObjects(nameBucket);
+        List<S3ObjectSummary> summary = objects.getObjectSummaries();
+
+        for(S3ObjectSummary s : summary){
+            System.out.println("Object Id :-" + s.getKey());
+        }
+    }
+
+    /*
+    @Override
+    public void create(String objectName){
         if(!exists(objectUrl)){
             String objectName = objectUrl.substring(objectUrl.lastIndexOf("/") + 1);
 
@@ -89,6 +69,6 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
             }
         }
     }
-
+*/
 
 }
