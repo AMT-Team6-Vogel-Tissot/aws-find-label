@@ -13,149 +13,180 @@ public class AwsDataObjectHelperImplTest {
     private String domain = "aws.dev.actualit.info";
     private String bucketName = "amt.team06.diduno.education";
     private String bucketUrl = "s3://" + bucketName ;
-
-    private String imageName = "/home/maelle/Pictures/2020-slim.png";
-    private String pathToTestFolder;
-    private String fullPathToImage;
-    private String prefixObjectDownloaded;
-
-    private String newBucket = "test-s1";
-
+    private String pathToTestFolder = "/home/maelle/Pictures/";
+    private String imageName = "2020-slim.png";
+    private String newName = "2021-slim.png";
 
 @Test
-    public void ListBucket(){
+    public void ListBucket_Success(){
 
-        bucketManager.dataObject.ListBuckets();
-    }
-
-    @Test
-    public void bucketExist(){
-        assertTrue(bucketManager.dataObject.existBucket(bucketName));
-    }
-
-    @Test
-    public void bucketDoesntExist(){
-        assertEquals(false, bucketManager.dataObject.existBucket("aled"));
-    }
-
-    @Test
-    public void CreateObject_CreateNewBucket_Success() {
         //given
-        assertFalse(bucketManager.dataObject.existBucket(newBucket));
+        String listBuckets =
+                "amt.team01.diduno.education\n" +
+                "amt.team02.diduno.education\n" +
+                "amt.team03.diduno.education\n" +
+                "amt.team04.diduno.education\n" +
+                "amt.team06.diduno.education\n" +
+                "amt.team07.diduno.education\n" +
+                "amt.team08.diduno.education\n" +
+                "amt.team09.diduno.education\n" +
+                "amt.team10.diduno.education\n" +
+                "amt.team11.diduno.education\n" +
+                "amt.team98.diduno.education\n" +
+                "amt.team99.diduno.education\n" +
+                "raid0toraid5.diduno.education\n" +
+                "raid1toraid6.diduno.education\n" +
+                "raid5toraid0.diduno.education\n" +
+                "raid6toraid1.diduno.education\n" +
+                "sto1.team.00\n" +
+                "test.bucket.sto1";
+        String actualResult;
 
         //when
-        this.bucketManager.dataObject.create(newBucket);
+        actualResult = bucketManager.dataObject.listBuckets();
 
         //then
-        assertTrue(this.bucketManager.dataObject.existBucket(newBucket));
+        assertEquals(listBuckets, actualResult);
     }
 
-/*
     @Test
-    public void CreateObject_CreateObjectWithExistingBucket_Success() {
+    public void ListObjects_Success(){
         //given
-        String fileName = this.imageName;
-        String objectUrl = this.bucketUrl + "/" + this.imageName;
-        this.bucketManager.dataObject.create(this.bucketUrl);
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
-        assertFalse(this.bucketManager.dataObject.existObject(objectUrl));
+        String listObjects = "test\n" + "test2";
+        String file = this.pathToTestFolder + "/" + this.imageName;
+
+        this.bucketManager.dataObject.createObject(this.imageName, file);
+        this.bucketManager.dataObject.createObject(this.imageName + "2", file);
+        String actualResult;
 
         //when
-        this.bucketManager.createObject(objectUrl, this.pathToTestFolder + "//" + fileName);
+        actualResult = bucketManager.dataObject.listObjects();
 
         //then
-        assertTrue(this.bucketManager.exists(objectUrl));
+        assertEquals(listObjects, actualResult);
     }
 
     @Test
-    public void CreateObject_CreateObjectBucketNotExist_Success() {
+    public void ExistBucket_bucketExist(){
         //given
-        String fileName = this.imageName;
-        String objectUrl = this.bucketUrl + "/" + this.imageName;
-        assertFalse(this.bucketManager.exists(this.bucketUrl));
-        assertFalse(this.bucketManager.exists(objectUrl));
-
-        //when
-        this.bucketManager.createObject(objectUrl, this.pathToTestFolder + "//" + fileName);
-
-        //then
-        assertTrue(this.bucketManager.exists(objectUrl));
-    }
-
-
-    @Test
-    public void Exists_NominalCase_Success() {
-        //given
-        this.bucketManager.createObject(this.bucketUrl);
-
         boolean actualResult;
 
         //when
-        actualResult = this.bucketManager.exists(bucketUrl);
+        actualResult = bucketManager.dataObject.existBucket(bucketName);
 
         //then
         assertTrue(actualResult);
     }
 
     @Test
-    public void Exists_ObjectNotExistBucket_Success() {
+    public void ExistBucket_bucketDoesntExist(){
         //given
-        String notExistingBucket = "notExistingBucket" + this.domain;
         boolean actualResult;
 
         //when
-        actualResult = this.bucketManager.exists(notExistingBucket);
+        actualResult = bucketManager.dataObject.existBucket("aled");
 
         //then
         assertFalse(actualResult);
     }
 
     @Test
-    public void Exists_ObjectNotExistFile_Success() {
+    public void ExistObject_ObjectIsPresent_Success() {
         //given
-        this.bucketManager.createObject(this.bucketUrl);
-        String notExistingFile = bucketUrl + "//" + "notExistingFile.jpg";
-        assertTrue(this.bucketManager.exists(bucketUrl));
+        String file = this.pathToTestFolder + "/" + this.imageName;
+        this.bucketManager.dataObject.createObject(this.imageName, file);
         boolean actualResult;
 
         //when
-        actualResult = this.bucketManager.exists(notExistingFile);
+        actualResult = this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName);
+
+        //then
+        assertTrue(actualResult);
+    }
+
+    @Test
+    public void ExistObject_ObjectIsNotPresent_Success() {
+        //given
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        boolean actualResult;
+
+        //when
+        actualResult = this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName);
 
         //then
         assertFalse(actualResult);
     }
 
-
     @Test
-    public void RemoveObject_EmptyBucket_Success() {
+    public void CreateObject_CreateObjectWithExistingBucket_Success() {
         //given
-        this.bucketManager.createObject(this.bucketUrl);
-        assertTrue(this.bucketManager.exists(bucketUrl));
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+        String file = this.pathToTestFolder + "/" + this.imageName;
 
         //when
-        this.bucketManager.removeObject(this.bucketUrl);
+        this.bucketManager.dataObject.createObject(this.imageName, file);
 
         //then
-        assertFalse(this.bucketManager.exists(bucketUrl));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+    }
+
+    @Test
+    public void RemoveObject_RemoveNotExistingObject_Success() {
+        //given
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+
+        //when
+        this.bucketManager.dataObject.removeObject(this.bucketUrl + "/" + this.imageName);
+
+        //then
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
     }
 
     @Test
     public void RemoveObject_NotEmptyBucket_Success() {
         //given
-        String fileName = this.imageName;
-        String objectUrl = this.bucketUrl + "/" + this.imageName;
-         this.bucketManager.createObject(this.bucketUrl);
-         this.bucketManager.createObject(objectUrl, this.pathToTestFolder + "//" + fileName);
+        String file = this.pathToTestFolder + "/" + this.imageName;
+        this.bucketManager.dataObject.createObject(this.imageName, file);
 
-        assertTrue(this.bucketManager.exists(bucketUrl));
-        assertTrue(this.bucketManager.exists(objectUrl));
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
 
         //when
-         this.bucketManager.removeObject(this.bucketUrl);
+         this.bucketManager.dataObject.removeObject(this.bucketUrl, this.imageName);
 
         //then
-        assertFalse(this.bucketManager.exists(bucketUrl));
-    }*/
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+    }
 
+    @Test
+    public void UpdateObject_UpdateExistingObjectName(){
+        //given
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        String file = this.pathToTestFolder + "/" + this.imageName;
+        this.bucketManager.dataObject.createObject(this.imageName, file);
+
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+
+        //when
+        this.bucketManager.dataObject.updateObject(this.bucketUrl, this.imageName, this.newName);
+
+        //then
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.newName));
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+    }
+
+    @Test
+    public void UpdateObject_UpdateNoneExistingObjectName(){
+        //given
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+
+        //when
+        this.bucketManager.dataObject.updateObject(this.bucketUrl, this.imageName, this.newName);
+
+        //then
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.newName));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+    }
 
 }
