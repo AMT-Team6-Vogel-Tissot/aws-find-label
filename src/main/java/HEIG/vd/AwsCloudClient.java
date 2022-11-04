@@ -13,8 +13,8 @@ public class AwsCloudClient implements ICloudClient {
     AwsDataObjectHelperImpl dataObject;
     AwsLabelDetectorHelperImpl labelDetector;
 
-    AwsCloudClient(){
-        AWSCredentialsProvider provider = new ProfileCredentialsProvider("amt06");
+    AwsCloudClient(String profileName){
+        AWSCredentialsProvider provider = new ProfileCredentialsProvider(profileName);
 
         AmazonS3 cloudClient = AmazonS3ClientBuilder.standard()
                 .withRegion(EU_WEST_2)
