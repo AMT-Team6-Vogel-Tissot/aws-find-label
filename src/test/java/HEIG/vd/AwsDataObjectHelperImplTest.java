@@ -37,6 +37,7 @@ public class AwsDataObjectHelperImplTest {
                 "raid1toraid6.diduno.education\n" +
                 "raid5toraid0.diduno.education\n" +
                 "raid6toraid1.diduno.education\n" +
+                "sto1.sandbox.diduno.education\n" +
                 "sto1.team.00\n" +
                 "test.bucket.sto1\n";
         String actualResult;
