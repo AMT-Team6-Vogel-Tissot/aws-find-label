@@ -2,22 +2,21 @@ package HEIG.vd;
 
 import static org.junit.Assert.*;
 
-import com.amazonaws.services.s3.model.Bucket;
 import org.junit.Test;
 
-import java.util.List;
+import java.nio.file.Path;
 
 public class AwsDataObjectHelperImplTest {
 
-    private AwsCloudClient bucketManager = new AwsCloudClient("default");
-    private String domain = "aws.dev.actualit.info";
-    private String bucketName = "amt.team06.diduno.education";
-    private String bucketUrl = "s3://" + bucketName ;
-    private String pathToTestFolder = "/home/maelle/Pictures/";
-    private String imageName = "2020-slim.png";
-    private String newName = "2021-slim.png";
+    private final AwsCloudClient bucketManager = new AwsCloudClient("amt.team06.diduno.education");
 
-@Test
+    private final String bucketName = bucketManager.getBucketUrl();
+    private String pathToTestFolder = "./filesTest/";
+    private final String image1 = "file1.jpg";
+    private final String image2 = "file2.jpg";
+    private final String newImageName = "file3.jpg";
+
+    @Test
     public void ListBucket_Success(){
 
         //given
@@ -39,7 +38,7 @@ public class AwsDataObjectHelperImplTest {
                 "raid5toraid0.diduno.education\n" +
                 "raid6toraid1.diduno.education\n" +
                 "sto1.team.00\n" +
-                "test.bucket.sto1";
+                "test.bucket.sto1\n";
         String actualResult;
 
         //when
@@ -52,15 +51,19 @@ public class AwsDataObjectHelperImplTest {
     @Test
     public void ListObjects_Success(){
         //given
-        String listObjects = "test\n" + "test2";
-        String file = this.pathToTestFolder + "/" + this.imageName;
+        String listObjects = "file1.jpg\n" + "file2.jpg\n";
+        Path path1 = Path.of(this.pathToTestFolder, this.image1);
+        Path path2 = Path.of(this.pathToTestFolder, this.image2);
 
-        this.bucketManager.dataObject.createObject(this.imageName, file);
-        this.bucketManager.dataObject.createObject(this.imageName + "2", file);
+        this.bucketManager.dataObject.createObject(this.bucketName, this.image1, path1);
+        this.bucketManager.dataObject.createObject(this.bucketName, this.image2, path2);
         String actualResult;
 
         //when
-        actualResult = bucketManager.dataObject.listObjects();
+        actualResult = bucketManager.dataObject.listObjects(bucketName);
+
+        this.bucketManager.dataObject.removeObject(this.bucketName, this.image1);
+        this.bucketManager.dataObject.removeObject(this.bucketName, this.image2);
 
         //then
         assertEquals(listObjects, actualResult);
@@ -93,25 +96,26 @@ public class AwsDataObjectHelperImplTest {
     @Test
     public void ExistObject_ObjectIsPresent_Success() {
         //given
-        String file = this.pathToTestFolder + "/" + this.imageName;
-        this.bucketManager.dataObject.createObject(this.imageName, file);
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        this.bucketManager.dataObject.createObject(this.bucketName, this.image1, path);
         boolean actualResult;
 
         //when
-        actualResult = this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName);
+        actualResult = this.bucketManager.dataObject.existObject(this.bucketName, this.image1);
 
         //then
+        this.bucketManager.dataObject.removeObject(this.bucketName, this.image1);
         assertTrue(actualResult);
     }
 
     @Test
     public void ExistObject_ObjectIsNotPresent_Success() {
         //given
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketName));
         boolean actualResult;
 
         //when
-        actualResult = this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName);
+        actualResult = this.bucketManager.dataObject.existObject(this.bucketName, this.image1);
 
         //then
         assertFalse(actualResult);
@@ -120,73 +124,64 @@ public class AwsDataObjectHelperImplTest {
     @Test
     public void CreateObject_CreateObjectWithExistingBucket_Success() {
         //given
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
-        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
-        String file = this.pathToTestFolder + "/" + this.imageName;
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketName));
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
+        Path path = Path.of(this.pathToTestFolder, this.image1);
 
         //when
-        this.bucketManager.dataObject.createObject(this.imageName, file);
+        this.bucketManager.dataObject.createObject(this.bucketName, this.image1, path);
 
         //then
-        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
+        this.bucketManager.dataObject.removeObject(this.bucketName, this.image1);
     }
 
     @Test
     public void RemoveObject_RemoveNotExistingObject_Success() {
         //given
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketName));
 
         //when
-        this.bucketManager.dataObject.removeObject(this.bucketUrl + "/" + this.imageName);
+        this.bucketManager.dataObject.removeObject(this.bucketName, this.image1);
 
         //then
-        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
     }
+
 
     @Test
     public void RemoveObject_NotEmptyBucket_Success() {
         //given
-        String file = this.pathToTestFolder + "/" + this.imageName;
-        this.bucketManager.dataObject.createObject(this.imageName, file);
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        this.bucketManager.dataObject.createObject(this.bucketName, this.image1, path);
 
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
-        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketName));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
 
         //when
-         this.bucketManager.dataObject.removeObject(this.bucketUrl, this.imageName);
+         this.bucketManager.dataObject.removeObject(this.bucketName, this.image1);
 
         //then
-        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
     }
 
     @Test
     public void UpdateObject_UpdateExistingObjectName(){
         //given
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
-        String file = this.pathToTestFolder + "/" + this.imageName;
-        this.bucketManager.dataObject.createObject(this.imageName, file);
+        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketName));
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        this.bucketManager.dataObject.createObject(this.bucketName, this.image1, path);
 
-        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
-
-        //when
-        this.bucketManager.dataObject.updateObject(this.bucketUrl, this.imageName, this.newName);
-
-        //then
-        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.newName));
-        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
-    }
-
-    @Test
-    public void UpdateObject_UpdateNoneExistingObjectName(){
-        //given
-        assertTrue(this.bucketManager.dataObject.existBucket(this.bucketUrl));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
 
         //when
-        this.bucketManager.dataObject.updateObject(this.bucketUrl, this.imageName, this.newName);
+        this.bucketManager.dataObject.updateObject(this.bucketName, this.image1, this.newImageName);
 
         //then
-        assertFalse(this.bucketManager.dataObject.existObject(this.bucketUrl, this.newName));
-        assertTrue(this.bucketManager.dataObject.existObject(this.bucketUrl, this.imageName));
+        assertFalse(this.bucketManager.dataObject.existObject(this.bucketName, this.image1));
+        assertTrue(this.bucketManager.dataObject.existObject(this.bucketName, this.newImageName));
+
+        this.bucketManager.dataObject.removeObject(this.bucketName, this.newImageName);
     }
 
 }

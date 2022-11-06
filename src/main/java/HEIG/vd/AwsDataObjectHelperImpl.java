@@ -1,77 +1,181 @@
 package HEIG.vd;
 
 import HEIG.vd.interfaces.IDataObjectHelper;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
-
-import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 
 
 public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
-    AmazonS3 profile;
+    private S3Client profile;
 
-    public AwsDataObjectHelperImpl(AmazonS3 profile){
+    public AwsDataObjectHelperImpl(S3Client profile){
         this.profile = profile;
-    }
-    @Override
-    public void create(String objectName, Path path) {
-        profile.putObject("amt.team06.diduno.education", objectName, new File(path.toString()));
     }
 
     public boolean existBucket(String name){
-        return profile.doesBucketExistV2(name);
+        HeadBucketRequest hbReq = HeadBucketRequest
+                .builder()
+                .bucket(name)
+                .build();
+
+        try{
+            profile.headBucket(hbReq);
+            return true;
+        }catch (S3Exception e){
+            return false;
+        }
+
     }
+
 
     public boolean existObject(String nameBucket, String nameObject){
-        return profile.doesObjectExist(nameBucket, nameObject);
-    }
+        GetObjectRequest goReq = GetObjectRequest
+                .builder()
+                .bucket(nameBucket)
+                .key(nameObject)
+                .build();
 
-    public void ListBuckets() {
-        List<Bucket> buckets = profile.listBuckets();
-        System.out.println("Your {S3} buckets are:");
-        for (Bucket b : buckets) {
-            System.out.println("* " + b.getName());
+        try {
+            profile.getObject(goReq);
+            return true;
+        } catch (S3Exception e){
+            return false;
         }
     }
 
-    public void ListObjects(String nameBucket){
+    public String listBuckets() {
+        StringBuilder str = new StringBuilder();
 
-        ObjectListing objects = profile.listObjects(nameBucket);
-        List<S3ObjectSummary> summary = objects.getObjectSummaries();
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
+        ListBucketsResponse listBucketsResponse = profile.listBuckets(listBucketsRequest);
 
-        for(S3ObjectSummary s : summary){
-            System.out.println("Object Id :-" + s.getKey());
+        for (Bucket b : listBucketsResponse.buckets()) {
+            str.append(b.name()).append("\n");
         }
+
+        return str.toString();
     }
 
-    /*
-    @Override
-    public void create(String objectName){
-        if(!exists(objectUrl)){
-            String objectName = objectUrl.substring(objectUrl.lastIndexOf("/") + 1);
+    public String listObjects(String bucketName){
 
-            try {
-                File object = new File(path);
-                InputStream in = new FileInputStream(object);
+        StringBuilder str = new StringBuilder();
 
-                ObjectMetadata om = new ObjectMetadata();
-                om.setContentType("images/jpg");
-                om.setContentLength(object.length());
+        try {
+            ListObjectsRequest listObjects = ListObjectsRequest
+                    .builder()
+                    .bucket(bucketName)
+                    .build();
 
-                PutObjectRequest objectRequest =  new PutObjectRequest(bucketUrl, objectName, in, om);
-                cloudClient.putObject(objectRequest);
+            ListObjectsResponse res = profile.listObjects(listObjects);
 
-            } catch (AmazonServiceException e) {
-                System.err.println(e.getErrorMessage());
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+            List<S3Object> objects = res.contents();
+            for (S3Object myValue : objects) {
+                str.append(myValue.key()).append("\n");
             }
+        } catch (S3Exception e) {
+            System.err.println(e.awsErrorDetails().errorMessage());
+            System.exit(1);
         }
-    }
-*/
 
+        return str.toString();
+    }
+
+    @Override
+    public URL createObject(String bucketName, String objectName, Path path) {
+        if(existBucket(bucketName) && !existObject(bucketName, objectName)){
+
+            try{
+                S3Presigner presigner = S3Presigner.create();
+
+                PutObjectRequest poReq = PutObjectRequest
+                        .builder()
+                        .bucket(bucketName)
+                        .key(objectName)
+                        .build();
+
+                profile.putObject(poReq, path);
+
+                GetObjectRequest goReq = GetObjectRequest
+                        .builder()
+                        .bucket(bucketName)
+                        .key(objectName)
+                        .build();
+
+                GetObjectPresignRequest goPreReq = GetObjectPresignRequest
+                        .builder()
+                        .signatureDuration(Duration.ofMinutes(10))
+                        .getObjectRequest(goReq)
+                        .build();
+
+                PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(goPreReq);
+
+                return presignedRequest.url();
+
+            } catch (S3Exception e){
+                System.err.println(e.awsErrorDetails().errorMessage());
+                System.exit(1);
+            }
+
+        }
+
+        return null;
+    }
+
+    public void removeObject(String bucketName, String objectName) {
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectName)
+                .build();
+
+        profile.deleteObject(deleteObjectRequest);
+    }
+
+    public URL updateObject(String bucketName, String image1, String newImageName) {
+
+        S3Presigner presigner = S3Presigner.create();
+
+        CopyObjectRequest coReq = CopyObjectRequest
+                .builder()
+                .sourceBucket(bucketName)
+                .sourceKey(image1)
+                .destinationBucket(bucketName)
+                .destinationKey(newImageName)
+                .build();
+
+        try{
+            profile.copyObject(coReq);
+
+            removeObject(bucketName, image1);
+
+            GetObjectRequest goReq = GetObjectRequest
+                    .builder()
+                    .bucket(bucketName)
+                    .key(newImageName)
+                    .build();
+
+            GetObjectPresignRequest goPreReq = GetObjectPresignRequest
+                    .builder()
+                    .signatureDuration(Duration.ofMinutes(10))
+                    .getObjectRequest(goReq)
+                    .build();
+
+            PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(goPreReq);
+
+            return presignedRequest.url();
+        } catch (S3Exception e) {
+            System.err.println(e.awsErrorDetails().errorMessage());
+            System.exit(1);
+        }
+
+        return null;
+    }
 }

@@ -1,13 +1,13 @@
 package HEIG.vd;
 
 import HEIG.vd.interfaces.ILabelDetector;
-import com.amazonaws.services.s3.AmazonS3;
+import software.amazon.awssdk.services.s3.S3Client;
 
 public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
-    AmazonS3 profile;
+    S3Client profile;
 
-    public AwsLabelDetectorHelperImpl(AmazonS3 profile){
+    public AwsLabelDetectorHelperImpl(S3Client profile){
         this.profile = profile;
     }
 
