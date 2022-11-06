@@ -1,17 +1,16 @@
 package HEIG.vd;
 
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class AwsBucketManagerImpl {
     public static void main(String[] args) {
 
-        AwsCloudClient client = new AwsCloudClient("default");
+        AwsCloudClient client = new AwsCloudClient("amt.team06.diduno.education");
 
-        client.dataObject.ListBuckets();
+        //URL u = client.dataObject.createObject(client.getBucketUrl(),"3", Paths.get("./filesTest/file1.jpg"));
 
-        System.out.println(client.dataObject.existObject("amt.team06.diduno.education","test"));
-        System.out.println(client.dataObject.existBucket("amt.team06.diduno.education"));
-        System.out.println(client.dataObject.existBucket("vogel-maelle"));
-
-        client.dataObject.ListObjects("amt.team06.diduno.education");
-
+        System.out.println(client.dataObject.listObjects(client.getBucketUrl()));
     }
 }
