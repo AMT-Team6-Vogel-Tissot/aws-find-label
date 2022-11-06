@@ -1,5 +1,7 @@
 package HEIG.vd.interfaces;
 
+import java.util.Map;
+
 public interface ILabelDetector {
-    String execute(String imageUri, int[] params);
+    Map<String, String> execute(String nameBucket, String imageUri, int[] params);
 }

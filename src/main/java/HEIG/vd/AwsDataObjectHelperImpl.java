@@ -1,6 +1,8 @@
 package HEIG.vd;
 
 import HEIG.vd.interfaces.IDataObjectHelper;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -8,7 +10,6 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.net.URL;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
     @Override
-    public URL createObject(String bucketName, String objectName, Path path) {
+    public URL createObject(String bucketName, String objectName, byte[] contentFile) {
         if(existBucket(bucketName) && !existObject(bucketName, objectName)){
 
             try{
@@ -102,7 +103,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
                         .key(objectName)
                         .build();
 
-                profile.putObject(poReq, path);
+                profile.putObject(poReq, RequestBody.fromBytes(contentFile));
 
                 GetObjectRequest goReq = GetObjectRequest
                         .builder()
@@ -177,5 +178,22 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         }
 
         return null;
+    }
+
+    public byte[] getObject(String bucketName, String objectName){
+        byte[] data = null;
+
+        if(existBucket(bucketName) && existObject(bucketName, objectName)) {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectName)
+                    .build();
+
+            ResponseBytes<GetObjectResponse> objectBytes = profile.getObjectAsBytes(getObjectRequest);
+
+            data = objectBytes.asByteArray();
+        }
+
+        return data;
     }
 }
