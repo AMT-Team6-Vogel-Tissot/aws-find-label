@@ -2,7 +2,9 @@ package HEIG.vd;
 
 import HEIG.vd.interfaces.ICloudClient;
 
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import io.github.cdimascio.dotenv.Dotenv;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3Client;
 import static software.amazon.awssdk.regions.Region.EU_WEST_2;
 
@@ -17,9 +19,18 @@ public class AwsCloudClient implements ICloudClient {
 
     private AwsCloudClient(String bucketUrl){
 
+        Dotenv env = Dotenv.configure()
+                .ignoreIfMissing()
+                .systemProperties()
+                .load();
+
+        StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider
+                .create(AwsBasicCredentials.create(env.get("AWS_ACCESS_KEY"),
+                        env.get("AWS_SECRET_KEY")));
+
         S3Client cloudClient = S3Client.builder()
                 .region(EU_WEST_2)
-                .credentialsProvider(ProfileCredentialsProvider.builder().profileName("amt06").build())
+                .credentialsProvider(credentialsProvider)
                 .build();
 
         this.bucketUrl = bucketUrl;
