@@ -23,13 +23,13 @@ Il est ensuite possible de lancer l'application via la commande ```java -jar Aws
 Pour l'instant le .jar effectue une suite de commande prédéfinie :
 - On se connecte à AWS
 - Création d'un objet
-- Utilisatoin de rekognition pour analyser l'image
+- Utilisatoin de rekognition pour analyser l'image disponible dans le dossier filesTest
 - Affichage des labels
 - Suppression de l'objet image créé et de l'objet de résultat (contenant le json) créé (pour permettre de relancer plusieurs fois le .jar)
 
 ## Utilisation de l'application sur l'architecture fournie
 
-Voici les commandes à exécuter :
+Voici les commandes à exécuter sur la machine debian:
 
 ```
 cd app/
