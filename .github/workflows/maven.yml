@@ -8,17 +8,14 @@ on:
 jobs:
   build:
     environment: AWS
+    env:
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -28,6 +25,11 @@ jobs:
       - name: Build
         run: mvn -B package --file pom.xml
   test:
+    environment: AWS
+    env:
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
     runs-on: ubuntu-latest
     steps:
       #clone the repo
