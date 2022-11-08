@@ -23,7 +23,7 @@ jobs:
           distribution: 'corretto'
           cache: maven
       - name: Build
-        run: mvn -B package --file pom.xml
+        run: mvn package
   test:
     environment: AWS
     env:
