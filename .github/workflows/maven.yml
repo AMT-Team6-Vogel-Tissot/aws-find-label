@@ -2,9 +2,7 @@ name: maven build & test
 on:
   push:
     branches:
-      - main
-      - feature*
-      - fix*
+      - *
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
