@@ -17,7 +17,6 @@ public class Main {
         AwsDataObjectHelperImpl dataObjectHelp = client.getDataObject();
         AwsLabelDetectorHelperImpl labelDetectorHelp = client.getLabelDetector();
 
-
         System.out.println("Lecture du fichier se trouvant au chemin : " + path);
         byte[] fileContent = Files.readAllBytes(path);
 
@@ -34,6 +33,9 @@ public class Main {
         System.out.println("Affichage des labels récupéré depuis le fichier" +  objectName + "-result : ");
 
         System.out.println(new String(dataObjectHelp.getObject(client.getBucketUrl(), objectName + "-result")));
+
+        dataObjectHelp.removeObject(client.getBucketUrl(), objectName);
+        dataObjectHelp.removeObject(client.getBucketUrl(), objectName + "-result");
 
     }
 }
