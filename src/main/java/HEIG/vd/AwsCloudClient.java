@@ -19,7 +19,7 @@ public class AwsCloudClient implements ICloudClient {
 
         S3Client cloudClient = S3Client.builder()
                 .region(EU_WEST_2)
-                .credentialsProvider(ProfileCredentialsProvider.builder().profileName("amt06").build())
+                .credentialsProvider(ProfileCredentialsProvider.builder().profileName("default").build())
                 .build();
 
         this.bucketUrl = bucketUrl;
