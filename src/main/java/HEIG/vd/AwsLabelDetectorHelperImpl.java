@@ -1,10 +1,12 @@
 package HEIG.vd;
 
 import HEIG.vd.interfaces.ILabelDetector;
+import HEIG.vd.utils.GetEnvVal;
 import com.google.gson.Gson;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rekognition.RekognitionClient;
 import software.amazon.awssdk.services.rekognition.model.*;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,29 +17,34 @@ import java.util.Map;
 
 public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
-    S3Client profile;
-    RekognitionClient rekClient;
+    private final RekognitionClient rekClient;
+
+    private final String nameBucket;
 
     int LIMIT_MAX_LABELS = 10;
 
-    public AwsLabelDetectorHelperImpl(S3Client profile){
-        this.profile = profile;
+    public AwsLabelDetectorHelperImpl(StaticCredentialsProvider credentialsProvider, Region region){
+
         rekClient = RekognitionClient
                 .builder()
+                .credentialsProvider(credentialsProvider)
+                .region(region)
                 .build();
+
+        nameBucket = GetEnvVal.getEnvVal("BUCKET");
     }
 
     @Override
-    public Map<String, String> execute(String nameBucket, String nameObject, int[] params) {
+    public Map<String, String> execute(String nameObject, int[] params) {
 
-        AwsCloudClient client = AwsCloudClient.getInstance(nameBucket);
+        AwsCloudClient client = AwsCloudClient.getInstance();
         Map<String, String> labelsConfidence = new HashMap<>();
 
         String nameObjectResult = nameObject + "-result";
 
         Gson gson = new Gson();
 
-        if(!client.getDataObject().existObject(nameBucket, nameObjectResult)){
+        if(!client.getDataObject().existObject(nameObjectResult)){
             try {
                 S3Object s3Object = S3Object
                         .builder()
@@ -66,7 +73,7 @@ public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
                 String json = gson.toJson(labelsConfidence);
 
-                client.getDataObject().createObject(nameBucket, nameObjectResult, json.getBytes());
+                client.getDataObject().createObject(nameObjectResult, json.getBytes());
 
             } catch (RekognitionException e) {
                 System.out.println(e.getMessage());

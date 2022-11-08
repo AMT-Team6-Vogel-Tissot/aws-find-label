@@ -1,8 +1,11 @@
 package HEIG.vd;
 
 import HEIG.vd.interfaces.IDataObjectHelper;
+import HEIG.vd.utils.GetEnvVal;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -15,11 +18,26 @@ import java.util.List;
 
 
 public class AwsDataObjectHelperImpl implements IDataObjectHelper {
+    private final S3Presigner presigner;
+    private final S3Client cloudClient;
 
-    private S3Client profile;
+    private final String nameBucket;
 
-    public AwsDataObjectHelperImpl(S3Client profile){
-        this.profile = profile;
+    public AwsDataObjectHelperImpl(StaticCredentialsProvider credentialsProvider, Region region){
+
+        cloudClient = S3Client
+                .builder()
+                .credentialsProvider(credentialsProvider)
+                .region(region)
+                .build();
+
+        presigner = S3Presigner
+                .builder()
+                .credentialsProvider(credentialsProvider)
+                .region(region)
+                .build();
+
+        nameBucket = GetEnvVal.getEnvVal("BUCKET");
     }
 
     public boolean existBucket(String name){
@@ -29,7 +47,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
                 .build();
 
         try{
-            profile.headBucket(hbReq);
+            cloudClient.headBucket(hbReq);
             return true;
         }catch (S3Exception e){
             return false;
@@ -38,7 +56,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
 
-    public boolean existObject(String nameBucket, String nameObject){
+    public boolean existObject(String nameObject){
         GetObjectRequest goReq = GetObjectRequest
                 .builder()
                 .bucket(nameBucket)
@@ -46,7 +64,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
                 .build();
 
         try {
-            profile.getObject(goReq);
+            cloudClient.getObject(goReq);
             return true;
         } catch (S3Exception e){
             return false;
@@ -57,7 +75,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         StringBuilder str = new StringBuilder();
 
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
-        ListBucketsResponse listBucketsResponse = profile.listBuckets(listBucketsRequest);
+        ListBucketsResponse listBucketsResponse = cloudClient.listBuckets(listBucketsRequest);
 
         for (Bucket b : listBucketsResponse.buckets()) {
             str.append(b.name()).append("\n");
@@ -66,17 +84,17 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return str.toString();
     }
 
-    public String listObjects(String bucketName){
+    public String listObjects(){
 
         StringBuilder str = new StringBuilder();
 
         try {
             ListObjectsRequest listObjects = ListObjectsRequest
                     .builder()
-                    .bucket(bucketName)
+                    .bucket(nameBucket)
                     .build();
 
-            ListObjectsResponse res = profile.listObjects(listObjects);
+            ListObjectsResponse res = cloudClient.listObjects(listObjects);
 
             List<S3Object> objects = res.contents();
             for (S3Object myValue : objects) {
@@ -91,23 +109,22 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
     @Override
-    public URL createObject(String bucketName, String objectName, byte[] contentFile) {
-        if(existBucket(bucketName) && !existObject(bucketName, objectName)){
+    public URL createObject(String objectName, byte[] contentFile) {
+        if(existBucket(nameBucket) && !existObject(objectName)){
 
             try{
-                S3Presigner presigner = S3Presigner.create();
 
                 PutObjectRequest poReq = PutObjectRequest
                         .builder()
-                        .bucket(bucketName)
+                        .bucket(nameBucket)
                         .key(objectName)
                         .build();
 
-                profile.putObject(poReq, RequestBody.fromBytes(contentFile));
+                cloudClient.putObject(poReq, RequestBody.fromBytes(contentFile));
 
                 GetObjectRequest goReq = GetObjectRequest
                         .builder()
-                        .bucket(bucketName)
+                        .bucket(nameBucket)
                         .key(objectName)
                         .build();
 
@@ -131,35 +148,33 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return null;
     }
 
-    public void removeObject(String bucketName, String objectName) {
+    public void removeObject(String objectName) {
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
+                .bucket(nameBucket)
                 .key(objectName)
                 .build();
 
-        profile.deleteObject(deleteObjectRequest);
+        cloudClient.deleteObject(deleteObjectRequest);
     }
 
-    public URL updateObject(String bucketName, String image1, String newImageName) {
-
-        S3Presigner presigner = S3Presigner.create();
+    public URL updateObject(String image1, String newImageName) {
 
         CopyObjectRequest coReq = CopyObjectRequest
                 .builder()
-                .sourceBucket(bucketName)
+                .sourceBucket(nameBucket)
                 .sourceKey(image1)
-                .destinationBucket(bucketName)
+                .destinationBucket(nameBucket)
                 .destinationKey(newImageName)
                 .build();
 
         try{
-            profile.copyObject(coReq);
+            cloudClient.copyObject(coReq);
 
-            removeObject(bucketName, image1);
+            removeObject(image1);
 
             GetObjectRequest goReq = GetObjectRequest
                     .builder()
-                    .bucket(bucketName)
+                    .bucket(nameBucket)
                     .key(newImageName)
                     .build();
 
@@ -180,16 +195,16 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return null;
     }
 
-    public byte[] getObject(String bucketName, String objectName){
+    public byte[] getObject(String objectName){
         byte[] data = null;
 
-        if(existBucket(bucketName) && existObject(bucketName, objectName)) {
+        if(existBucket(nameBucket) && existObject(objectName)) {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
+                    .bucket(nameBucket)
                     .key(objectName)
                     .build();
 
-            ResponseBytes<GetObjectResponse> objectBytes = profile.getObjectAsBytes(getObjectRequest);
+            ResponseBytes<GetObjectResponse> objectBytes = cloudClient.getObjectAsBytes(getObjectRequest);
 
             data = objectBytes.asByteArray();
         }

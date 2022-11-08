@@ -2,45 +2,39 @@ package HEIG.vd;
 
 import HEIG.vd.interfaces.ICloudClient;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.services.s3.S3Client;
-import static software.amazon.awssdk.regions.Region.EU_WEST_2;
+import software.amazon.awssdk.regions.Region;
+
+import java.util.Objects;
+
+import HEIG.vd.utils.GetEnvVal;
 
 public class AwsCloudClient implements ICloudClient {
 
-    private AwsDataObjectHelperImpl dataObject;
-    private AwsLabelDetectorHelperImpl labelDetector;
+    private final AwsDataObjectHelperImpl dataObject;
+    private final AwsLabelDetectorHelperImpl labelDetector;
 
     private static AwsCloudClient INSTANCIED = null;
 
     private final String bucketUrl;
 
-    private AwsCloudClient(String bucketUrl){
+    private AwsCloudClient(){
 
-        Dotenv env = Dotenv.configure()
-                .ignoreIfMissing()
-                .systemProperties()
-                .load();
+        Region region = Region.of(Objects.requireNonNull(GetEnvVal.getEnvVal("REGION")));
 
         StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider
-                .create(AwsBasicCredentials.create(env.get("AWS_ACCESS_KEY"),
-                        env.get("AWS_SECRET_KEY")));
+                .create(AwsBasicCredentials.create(GetEnvVal.getEnvVal("AWS_ACCESS_KEY_ID"),
+                        GetEnvVal.getEnvVal("AWS_SECRET_ACCESS_KEY")));
 
-        S3Client cloudClient = S3Client.builder()
-                .region(EU_WEST_2)
-                .credentialsProvider(credentialsProvider)
-                .build();
-
-        this.bucketUrl = bucketUrl;
-        dataObject = new AwsDataObjectHelperImpl(cloudClient);
-        labelDetector = new AwsLabelDetectorHelperImpl(cloudClient);
+        bucketUrl = GetEnvVal.getEnvVal("BUCKET");
+        dataObject = new AwsDataObjectHelperImpl(credentialsProvider, region);
+        labelDetector = new AwsLabelDetectorHelperImpl(credentialsProvider, region);
     }
 
-    public static AwsCloudClient getInstance(String bucketName) {
+    public static AwsCloudClient getInstance() {
         if(INSTANCIED == null){
-            INSTANCIED = new AwsCloudClient(bucketName);
+            INSTANCIED = new AwsCloudClient();
         }
         return INSTANCIED;
     }

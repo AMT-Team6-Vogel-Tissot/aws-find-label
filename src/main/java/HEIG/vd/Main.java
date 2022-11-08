@@ -13,7 +13,7 @@ public class Main {
         Path path = Path.of("./filesTest/file1.jpg");
 
         System.out.println("Loading des credentials...");
-        AwsCloudClient client = AwsCloudClient.getInstance("amt.team06.diduno.education");
+        AwsCloudClient client = AwsCloudClient.getInstance();
         AwsDataObjectHelperImpl dataObjectHelp = client.getDataObject();
         AwsLabelDetectorHelperImpl labelDetectorHelp = client.getLabelDetector();
 
@@ -21,21 +21,21 @@ public class Main {
         byte[] fileContent = Files.readAllBytes(path);
 
         System.out.println("Création de l'objet dans AWS S3...");
-        URL u = dataObjectHelp.createObject(client.getBucketUrl(),objectName, fileContent);
+        URL u = dataObjectHelp.createObject(objectName, fileContent);
 
         System.out.println("Lien pour accéder à l'objet (disponible 10min) : " + u);
 
         System.out.println("Détection des labels de l'image et création du fichier " + objectName + "-result...");
-        Map<String, String> labelsConfidence = labelDetectorHelp.execute(client.getBucketUrl(), objectName, new int[]{1, 2});
+        Map<String, String> labelsConfidence = labelDetectorHelp.execute(objectName, new int[]{1, 2});
 
         System.out.println("Affichage des labels : " + labelsConfidence);
 
         System.out.println("Affichage des labels récupéré depuis le fichier" +  objectName + "-result : ");
 
-        System.out.println(new String(dataObjectHelp.getObject(client.getBucketUrl(), objectName + "-result")));
+        System.out.println(new String(dataObjectHelp.getObject(objectName + "-result")));
 
-        dataObjectHelp.removeObject(client.getBucketUrl(), objectName);
-        dataObjectHelp.removeObject(client.getBucketUrl(), objectName + "-result");
+        dataObjectHelp.removeObject(objectName);
+        dataObjectHelp.removeObject(objectName + "-result");
 
     }
 }

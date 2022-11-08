@@ -5,5 +5,5 @@ import java.net.URL;
 import java.nio.file.Path;
 
 public interface IDataObjectHelper {
-    URL createObject(String bucketName, String objectName, byte[] contentFile);
+    URL createObject(String objectName, byte[] contentFile);
 }
