@@ -25,8 +25,13 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>aws-sdk-java</artifactId>
-            <version>2.18.11</version>
+            <artifactId>s3</artifactId>
+            <version>2.18.12</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>rekognition</artifactId>
+            <version>2.18.12</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

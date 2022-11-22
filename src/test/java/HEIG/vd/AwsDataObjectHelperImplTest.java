@@ -19,7 +19,7 @@ public class AwsDataObjectHelperImplTest {
     private final String image2 = "file2.jpg";
     private final String fileText = "file.txt";
     private final String newImageName = "file3.jpg";
-
+/*
     @Test
     public void ListBucket_Success(){
 
@@ -52,7 +52,7 @@ public class AwsDataObjectHelperImplTest {
         //then
         assertEquals(listBuckets, actualResult);
     }
-
+*/
     @Test
     public void ListObjects_Success() throws IOException {
         //given
