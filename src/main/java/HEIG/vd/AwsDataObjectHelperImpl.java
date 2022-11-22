@@ -40,21 +40,20 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         nameBucket = GetEnvVal.getEnvVal("BUCKET");
     }
 
+    //TODO Review Remove all reference to Bucket. Everything is an object.
     public boolean existBucket(String name){
         HeadBucketRequest hbReq = HeadBucketRequest
                 .builder()
                 .bucket(name)
                 .build();
-
         try{
             cloudClient.headBucket(hbReq);
             return true;
         }catch (S3Exception e){
+            //TODO REVIEW Choose. Catch or return.
             return false;
         }
-
     }
-
 
     public boolean existObject(String nameObject){
         GetObjectRequest goReq = GetObjectRequest
@@ -71,6 +70,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         }
     }
 
+    //TODO REVIEW Should be a private method
     public String listBuckets() {
         StringBuilder str = new StringBuilder();
 
@@ -84,6 +84,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return str.toString();
     }
 
+    //TODO REVIEW Should be the same as list buckets
     public String listObjects(){
 
         StringBuilder str = new StringBuilder();
@@ -108,6 +109,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return str.toString();
     }
 
+    //TODO REVIEW Split this method in two (create / generate URL -> publish object)
     @Override
     public URL createObject(String objectName, byte[] contentFile) {
         if(existBucket(nameBucket) && !existObject(objectName)){
@@ -128,6 +130,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
                         .key(objectName)
                         .build();
 
+                //TODO REVIEW externalize duration url in .env file
                 GetObjectPresignRequest goPreReq = GetObjectPresignRequest
                         .builder()
                         .signatureDuration(Duration.ofMinutes(10))
@@ -191,7 +194,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
             System.err.println(e.awsErrorDetails().errorMessage());
             System.exit(1);
         }
-
+        //TODO REVIEW Return an exception
         return null;
     }
 

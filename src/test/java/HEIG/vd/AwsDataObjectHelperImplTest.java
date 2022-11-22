@@ -20,6 +20,8 @@ public class AwsDataObjectHelperImplTest {
     private final String fileText = "file.txt";
     private final String newImageName = "file3.jpg";
 
+
+    //TODO REVIEW This test case is not required
     @Test
     public void ListBucket_Success() {
 
@@ -52,6 +54,7 @@ public class AwsDataObjectHelperImplTest {
         assertEquals(listBuckets, actualResult);
     }
 
+    //TODO REVIEW Rewrite test signature (method_scenario_expectedResult)
     @Test
     public void ListObjects_Success() throws IOException {
         // given
