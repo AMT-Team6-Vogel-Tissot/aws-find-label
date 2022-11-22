@@ -21,7 +21,9 @@ public class Main {
         byte[] fileContent = Files.readAllBytes(path);
 
         System.out.println("Création de l'objet dans AWS S3...");
-        URL u = dataObjectHelp.createObject(objectName, fileContent);
+        dataObjectHelp.create(objectName, fileContent);
+
+        URL u = dataObjectHelp.publish(objectName);
 
         System.out.println("Lien pour accéder à l'objet (disponible 10min) : " + u);
 
@@ -32,10 +34,10 @@ public class Main {
 
         System.out.println("Affichage des labels récupéré depuis le fichier" +  objectName + "-result : ");
 
-        System.out.println(new String(dataObjectHelp.getObject(objectName + "-result")));
+        System.out.println(new String(dataObjectHelp.get(objectName + "-result")));
 
-        dataObjectHelp.removeObject(objectName);
-        dataObjectHelp.removeObject(objectName + "-result");
+        dataObjectHelp.delete(objectName);
+        dataObjectHelp.delete(objectName + "-result");
 
     }
 }

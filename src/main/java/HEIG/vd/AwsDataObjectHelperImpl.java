@@ -72,7 +72,16 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         removeObject(objectName);
     }
 
-    //TODO Review Remove all reference to Bucket. Everything is an object.
+    @Override
+    public void update(String objectName, byte[] contentFile) {
+        updateObject(objectName, contentFile);
+    }
+
+    @Override
+    public void update(String objectName, byte[] contentFile, String newImageName) {
+        updateObject(objectName, contentFile, newImageName);
+    }
+
     private boolean existBucket(){
         HeadBucketRequest hbReq = HeadBucketRequest
                 .builder()
@@ -102,7 +111,6 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         }
     }
 
-    //TODO REVIEW Should be a private method
     private String listBuckets() {
         StringBuilder str = new StringBuilder();
 
@@ -116,7 +124,6 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return str.toString();
     }
 
-    //TODO REVIEW Should be the same as list buckets
     private String listObjects(){
 
         StringBuilder str = new StringBuilder();
@@ -141,8 +148,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return str.toString();
     }
 
-    //TODO REVIEW Split this method in two (create / generate URL -> publish object)
-    public void createObject(String objectName, byte[] contentFile) {
+    private void createObject(String objectName, byte[] contentFile) {
         if(exist() && !exist(objectName)){
 
             try{
@@ -155,23 +161,6 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
                 cloudClient.putObject(poReq, RequestBody.fromBytes(contentFile));
 
-                GetObjectRequest goReq = GetObjectRequest
-                        .builder()
-                        .bucket(nameBucket)
-                        .key(objectName)
-                        .build();
-
-                //TODO REVIEW externalize duration url in .env file
-                GetObjectPresignRequest goPreReq = GetObjectPresignRequest
-                        .builder()
-                        .signatureDuration(Duration.ofMinutes(10))
-                        .getObjectRequest(goReq)
-                        .build();
-
-                PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(goPreReq);
-
-                return presignedRequest.url();
-
             } catch (S3Exception e){
                 System.err.println(e.awsErrorDetails().errorMessage());
                 System.exit(1);
@@ -179,11 +168,25 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
         }
 
-        return null;
     }
 
     private URL publishURL(String objectName){
 
+        GetObjectRequest goReq = GetObjectRequest
+                .builder()
+                .bucket(nameBucket)
+                .key(objectName)
+                .build();
+
+        GetObjectPresignRequest goPreReq = GetObjectPresignRequest
+                .builder()
+                .signatureDuration(Duration.ofMinutes(Long.parseLong(GetEnvVal.getEnvVal("URL_DURATION"))))
+                .getObjectRequest(goReq)
+                .build();
+
+        PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(goPreReq);
+
+        return presignedRequest.url();
     }
 
     private void removeObject(String objectName) {
@@ -195,42 +198,21 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         cloudClient.deleteObject(deleteObjectRequest);
     }
 
-    public URL updateObject(String image1, String newImageName) {
+    private void updateObject(String objectName, byte[] contentFile) {
 
-        CopyObjectRequest coReq = CopyObjectRequest
-                .builder()
-                .sourceBucket(nameBucket)
-                .sourceKey(image1)
-                .destinationBucket(nameBucket)
-                .destinationKey(newImageName)
-                .build();
-
-        try{
-            cloudClient.copyObject(coReq);
-
-            removeObject(image1);
-
-            GetObjectRequest goReq = GetObjectRequest
-                    .builder()
-                    .bucket(nameBucket)
-                    .key(newImageName)
-                    .build();
-
-            GetObjectPresignRequest goPreReq = GetObjectPresignRequest
-                    .builder()
-                    .signatureDuration(Duration.ofMinutes(10))
-                    .getObjectRequest(goReq)
-                    .build();
-
-            PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(goPreReq);
-
-            return presignedRequest.url();
-        } catch (S3Exception e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            System.exit(1);
+        if(exist(objectName)) {
+            removeObject(objectName);
+            createObject(objectName, contentFile);
         }
-        //TODO REVIEW Return an exception
-        return null;
+    }
+
+    private void updateObject(String objectName, byte[] contentFile, String newObjectName) {
+
+        if(exist(objectName) && !exist(newObjectName)){
+            removeObject(objectName);
+            createObject(newObjectName, contentFile);
+        }
+
     }
 
     private byte[] getObject(String objectName){

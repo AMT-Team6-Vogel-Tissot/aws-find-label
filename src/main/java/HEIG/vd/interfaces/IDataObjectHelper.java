@@ -1,8 +1,6 @@
 package HEIG.vd.interfaces;
 
-
 import java.net.URL;
-import java.nio.file.Path;
 
 public interface IDataObjectHelper {
     URL publish(String objectName);
@@ -18,5 +16,9 @@ public interface IDataObjectHelper {
     byte[] get(String objectName);
 
     void delete(String objectName);
+
+    void update(String objectName, byte[] contentFile);
+
+    void update(String objectName, byte[] contentFile, String newImageName);
 
 }
