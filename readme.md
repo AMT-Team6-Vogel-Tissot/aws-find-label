@@ -17,7 +17,11 @@ Tout d'abord il vous faudra :
 
 ### Utilisation de Maven
 
+> TODO votre commande run les tests ce qui n'est pas désirable à cette étape
+
 Après avoir clone le repository, il faut installer les différentes dépendances via la commande : ```mvn clean install```
+
+> TODO La commande est juste mais impossible a run a cause du problème de .env qui est pas pris en compte
 
 Pour créer un package du projet avec maven-assembly, il faut utiliser la commande ```mvn package``` qui créera un .jar dans le dossier ```target``` qui se trouve à la racine du projet.
 
@@ -50,6 +54,8 @@ REGION=...
 BUCKET=...
 ```
 
+> TODO fix votre implémetation ou vos explications, Il ne charge pas les variables d'env avec le fichier metionné, je n'ai pas réussi a le faire fonctionner.
+
 Il est aussi nécessaire d'avoir un utilisateur IAM possédant ces droits :
 
 ```
@@ -79,9 +85,13 @@ Il est aussi nécessaire d'avoir un utilisateur IAM possédant ces droits :
 
 ### Tests
 
+> TODO La commande est juste mais impossible a run a cause du problème de .env qui est pas pris en compte
+> 
 Nous utilisons JUnit pour tester notre programme, il est possible de lancer les tests automatiquement à l'aide de Maven en utilisant la commande ```mvn test```.
 
 Nous avons mis en pratique une approche BDD (given, when, then) pour l'écriture des tests.
+
+> TODO pas de tests sur le label detection ?
 
 ### Annexes
 
