@@ -40,11 +40,43 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         nameBucket = GetEnvVal.getEnvVal("BUCKET");
     }
 
+    @Override
+    public URL publish(String objectName) {
+        return publishURL(objectName);
+    }
+
+    public boolean exist(){
+        return existBucket();
+    }
+
+    public boolean exist(String objectName){
+        return existObject(objectName);
+    }
+
+    public String list(){
+        return listObjects();
+    }
+
+    @Override
+    public void create(String objectName, byte[] contentFile) {
+        createObject(objectName, contentFile);
+    }
+
+    @Override
+    public byte[] get(String objectName) {
+        return getObject(objectName);
+    }
+
+    @Override
+    public void delete(String objectName) {
+        removeObject(objectName);
+    }
+
     //TODO Review Remove all reference to Bucket. Everything is an object.
-    public boolean existBucket(String name){
+    private boolean existBucket(){
         HeadBucketRequest hbReq = HeadBucketRequest
                 .builder()
-                .bucket(name)
+                .bucket(nameBucket)
                 .build();
         try{
             cloudClient.headBucket(hbReq);
@@ -55,7 +87,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         }
     }
 
-    public boolean existObject(String nameObject){
+    private boolean existObject(String nameObject){
         GetObjectRequest goReq = GetObjectRequest
                 .builder()
                 .bucket(nameBucket)
@@ -71,7 +103,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
     //TODO REVIEW Should be a private method
-    public String listBuckets() {
+    private String listBuckets() {
         StringBuilder str = new StringBuilder();
 
         ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
@@ -85,7 +117,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
     //TODO REVIEW Should be the same as list buckets
-    public String listObjects(){
+    private String listObjects(){
 
         StringBuilder str = new StringBuilder();
 
@@ -110,9 +142,8 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
     //TODO REVIEW Split this method in two (create / generate URL -> publish object)
-    @Override
-    public URL createObject(String objectName, byte[] contentFile) {
-        if(existBucket(nameBucket) && !existObject(objectName)){
+    public void createObject(String objectName, byte[] contentFile) {
+        if(exist() && !exist(objectName)){
 
             try{
 
@@ -151,7 +182,11 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return null;
     }
 
-    public void removeObject(String objectName) {
+    private URL publishURL(String objectName){
+
+    }
+
+    private void removeObject(String objectName) {
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(nameBucket)
                 .key(objectName)
@@ -198,10 +233,10 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return null;
     }
 
-    public byte[] getObject(String objectName){
+    private byte[] getObject(String objectName){
         byte[] data = null;
 
-        if(existBucket(nameBucket) && existObject(objectName)) {
+        if(exist() && existObject(objectName)) {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(nameBucket)
                     .key(objectName)
