@@ -12,9 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Question à poser :
-// ça veut dire quoi : intégrée à la requête api (encodée dans la request api),
-
 public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
     private final RekognitionClient rekClient;
@@ -44,7 +41,7 @@ public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
         Gson gson = new Gson();
 
-        if(!client.getDataObject().existObject(nameObjectResult)){
+        if(!client.getDataObject().exist(nameObjectResult)){
             try {
                 S3Object s3Object = S3Object
                         .builder()
@@ -73,7 +70,7 @@ public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
                 String json = gson.toJson(labelsConfidence);
 
-                client.getDataObject().createObject(nameObjectResult, json.getBytes());
+                client.getDataObject().create(nameObjectResult, json.getBytes());
 
             } catch (RekognitionException e) {
                 System.out.println(e.getMessage());
