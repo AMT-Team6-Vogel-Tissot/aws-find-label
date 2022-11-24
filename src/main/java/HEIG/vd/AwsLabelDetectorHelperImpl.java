@@ -105,7 +105,6 @@ public class AwsLabelDetectorHelperImpl implements ILabelDetector {
 
         } catch (RekognitionException e) {
             System.out.println(e.getMessage());
-            return null;
         }
 
         return labelsConfidence;

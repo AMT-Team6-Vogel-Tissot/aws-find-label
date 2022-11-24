@@ -23,7 +23,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
     private final String nameBucket;
 
-    public AwsDataObjectHelperImpl(StaticCredentialsProvider credentialsProvider, Region region){
+    public AwsDataObjectHelperImpl(StaticCredentialsProvider credentialsProvider, Region region) {
 
         cloudClient = S3Client
                 .builder()
@@ -40,15 +40,15 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         nameBucket = GetEnvVal.getEnvVal("BUCKET");
     }
 
-    public boolean exist(){
+    public boolean exist() {
         return existBucket();
     }
 
-    public boolean exist(String objectName){
+    public boolean exist(String objectName) {
         return existObject(objectName);
     }
 
-    public String list(){
+    public String list() {
         return listObjects();
     }
 
@@ -82,7 +82,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         updateObject(objectName, contentFile, newImageName);
     }
 
-    private boolean existBucket(){
+    private boolean existBucket() {
         HeadBucketRequest hbReq = HeadBucketRequest
                 .builder()
                 .bucket(nameBucket)
@@ -90,13 +90,13 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         try{
             cloudClient.headBucket(hbReq);
             return true;
-        }catch (S3Exception e){
+        }catch (S3Exception e) {
             //TODO REVIEW Choose. Catch or return.
             return false;
         }
     }
 
-    private boolean existObject(String nameObject){
+    private boolean existObject(String nameObject) {
         GetObjectRequest goReq = GetObjectRequest
                 .builder()
                 .bucket(nameBucket)
@@ -106,7 +106,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         try {
             cloudClient.getObject(goReq);
             return true;
-        } catch (S3Exception e){
+        } catch (S3Exception e) {
             return false;
         }
     }
@@ -124,7 +124,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         return str.toString();
     }
 
-    private String listObjects(){
+    private String listObjects() {
 
         StringBuilder str = new StringBuilder();
 
@@ -149,7 +149,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     }
 
     private void createObject(String objectName, byte[] contentFile) {
-        if(exist() && !exist(objectName)){
+        if(exist() && !exist(objectName)) {
 
             try{
 
@@ -161,7 +161,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
                 cloudClient.putObject(poReq, RequestBody.fromBytes(contentFile));
 
-            } catch (S3Exception e){
+            } catch (S3Exception e) {
                 System.err.println(e.awsErrorDetails().errorMessage());
                 System.exit(1);
             }
@@ -170,7 +170,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
     }
 
-    private URL publishURL(String objectName){
+    private URL publishURL(String objectName) {
 
         GetObjectRequest goReq = GetObjectRequest
                 .builder()
@@ -208,14 +208,14 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
 
     private void updateObject(String objectName, byte[] contentFile, String newObjectName) {
 
-        if(exist(objectName) && !exist(newObjectName)){
+        if(exist(objectName) && !exist(newObjectName)) {
             removeObject(objectName);
             createObject(newObjectName, contentFile);
         }
 
     }
 
-    private byte[] getObject(String objectName){
+    private byte[] getObject(String objectName) {
         byte[] data = null;
 
         if(exist() && existObject(objectName)) {
