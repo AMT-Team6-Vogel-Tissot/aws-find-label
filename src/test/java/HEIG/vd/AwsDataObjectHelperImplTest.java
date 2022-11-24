@@ -58,7 +58,7 @@ public class AwsDataObjectHelperImplTest {
 */
     //TODO REVIEW Rewrite test signature (method_scenario_expectedResult)
     @Test
-    public void ListObjects_Success() throws IOException {
+    public void List_Success() throws IOException {
         // given
         String listObjects = "file1.jpg\n" + "file2.jpg\n";
         Path path1 = Path.of(this.pathToTestFolder, this.image1);
@@ -79,7 +79,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void ExistBucket_bucketExist() {
+    public void Exist_bucketExist() {
         // given
         boolean actualResult;
 
@@ -91,7 +91,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void ExistObject_ObjectIsPresent_Success() throws IOException {
+    public void Exist_ObjectIsPresent_Success() throws IOException {
         // given
         Path path = Path.of(this.pathToTestFolder, this.image1);
         this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
@@ -106,7 +106,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void ExistObject_ObjectIsNotPresent_Success() {
+    public void Exist_ObjectIsNotPresent_Success() {
         // given
         assertTrue(this.dataObjectHelper.exist());
         boolean actualResult;
@@ -119,7 +119,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void CreateObject_CreateObjectWithExistingBucket_Success() throws IOException {
+    public void Create_CreateObjectWithExistingBucket_Success() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
         assertFalse(this.dataObjectHelper.exist(this.image1));
@@ -134,7 +134,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void RemoveObject_RemoveNotExistingObject_Success() {
+    public void Delete_RemoveNotExistingObject_Success() {
         // given
         assertTrue(this.dataObjectHelper.exist());
 
@@ -146,7 +146,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void RemoveObject_NotEmptyBucket_Success() throws IOException {
+    public void Delete_NotEmptyBucket_Success() throws IOException {
         // given
         Path path = Path.of(this.pathToTestFolder, this.image1);
         this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
@@ -162,7 +162,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void UpdateObject_UpdateExistingObjectContent() throws IOException {
+    public void Update_UpdateExistingObjectContent() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
         Path path = Path.of(this.pathToTestFolder, this.image1);
@@ -184,7 +184,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void UpdateObject_UpdateExistingObjectNameAndContent() throws IOException {
+    public void Update_UpdateExistingObjectNameAndContent() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
         Path path = Path.of(this.pathToTestFolder, this.image1);
@@ -207,7 +207,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void GetObject_GetExistingObject_Success() throws IOException {
+    public void Get_GetExistingObject_Success() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
         Path path = Path.of(this.pathToTestFolder, this.fileText);
@@ -224,7 +224,7 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void GetObject_GetNotExistingObject_Success() throws IOException {
+    public void Get_GetNotExistingObject_Success() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
 

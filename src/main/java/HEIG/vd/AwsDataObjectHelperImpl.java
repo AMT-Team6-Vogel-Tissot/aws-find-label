@@ -40,11 +40,6 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
         nameBucket = GetEnvVal.getEnvVal("BUCKET");
     }
 
-    @Override
-    public URL publish(String objectName) {
-        return publishURL(objectName);
-    }
-
     public boolean exist(){
         return existBucket();
     }
@@ -70,6 +65,11 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
     @Override
     public void delete(String objectName) {
         removeObject(objectName);
+    }
+
+    @Override
+    public URL publish(String objectName) {
+        return publishURL(objectName);
     }
 
     @Override
