@@ -21,21 +21,23 @@ public class Main {
         byte[] fileContent = Files.readAllBytes(path);
 
         System.out.println("Création de l'objet dans AWS S3...");
-        URL u = dataObjectHelp.createObject(objectName, fileContent);
+        dataObjectHelp.create(objectName, fileContent);
+
+        URL u = dataObjectHelp.publish(objectName);
 
         System.out.println("Lien pour accéder à l'objet (disponible 10min) : " + u);
 
         System.out.println("Détection des labels de l'image et création du fichier " + objectName + "-result...");
-        Map<String, String> labelsConfidence = labelDetectorHelp.execute(objectName, new int[]{1, 2});
+        Map<String, String> labelsConfidence = labelDetectorHelp.execute(objectName, 10, (float)50.0);
 
         System.out.println("Affichage des labels : " + labelsConfidence);
 
-        System.out.println("Affichage des labels récupéré depuis le fichier" +  objectName + "-result : ");
+        System.out.println("Affichage des labels récupéré depuis le fichier " +  objectName + "-result : ");
 
-        System.out.println(new String(dataObjectHelp.getObject(objectName + "-result")));
+        System.out.println(new String(dataObjectHelp.get(objectName + "-result")));
 
-        dataObjectHelp.removeObject(objectName);
-        dataObjectHelp.removeObject(objectName + "-result");
+        dataObjectHelp.delete(objectName);
+        dataObjectHelp.delete(objectName + "-result");
 
     }
 }

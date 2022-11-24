@@ -4,10 +4,8 @@ import java.util.Map;
 
 public interface ILabelDetector {
 
-    // TODO ajouter des explications, on comprends pas ce qu'il faut mettre dans
-    // params, ici j'utiliserais la javadoc pour que ce soit disponible facilement à
-    // l'utilisation et à l'implémentation
-    Map<String, String> execute(String imageUri, int[] params);
+    Map<String, String> execute(String nameObject, int maxLabels, float minConfidence);
 
-    // TODO method to process a base64 image
+    Map<String, String> executeBase64(String base64Image, int maxLabels, float minConfidence);
+
 }

@@ -28,17 +28,17 @@ public class AwsDataObjectHelperImplTest {
 
     @AfterEach
     public void cleanUpEach(){
-        if(dataObjectHelper.existObject(this.image1)){
-            this.dataObjectHelper.removeObject(this.image1);
+        if(dataObjectHelper.exist(this.image1)){
+            this.dataObjectHelper.delete(this.image1);
         }
-        if(dataObjectHelper.existObject(this.image2)){
-            this.dataObjectHelper.removeObject(this.image2);
+        if(dataObjectHelper.exist(this.image2)){
+            this.dataObjectHelper.delete(this.image2);
         }
-        if(dataObjectHelper.existObject(this.newImageName)){
-            this.dataObjectHelper.removeObject(this.newImageName);
+        if(dataObjectHelper.exist(this.newImageName)){
+            this.dataObjectHelper.delete(this.newImageName);
         }
-        if(dataObjectHelper.existObject(this.fileText)){
-            this.dataObjectHelper.removeObject(this.fileText);
+        if(dataObjectHelper.exist(this.fileText)){
+            this.dataObjectHelper.delete(this.fileText);
         }
     }
 
@@ -70,7 +70,7 @@ public class AwsDataObjectHelperImplTest {
         String actualResult;
 
         // when
-        actualResult = dataObjectHelper.listBuckets();
+        actualResult = dataObjectHelper.list();
 
         // then
         assertEquals(listBuckets, actualResult);
@@ -79,159 +79,182 @@ public class AwsDataObjectHelperImplTest {
 
     //TODO REVIEW Rewrite test signature (method_scenario_expectedResult)
     @Test
-    public void ListObjects_Success() throws IOException {
+    public void List_Success() throws IOException {
         // given
         String listObjects = "file1.jpg\n" + "file2.jpg\n";
 
 
-        this.dataObjectHelper.createObject(this.image1, Files.readAllBytes(path1));
-        this.dataObjectHelper.createObject(this.image2, Files.readAllBytes(path2));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path1));
+        this.dataObjectHelper.create(this.image2, Files.readAllBytes(path2));
         String actualResult;
 
         // when
-        actualResult = dataObjectHelper.listObjects();
+        actualResult = dataObjectHelper.list();
 
+        this.dataObjectHelper.delete(this.image1);
+        this.dataObjectHelper.delete(this.image2);
 
         // then
         assertEquals(listObjects, actualResult);
     }
 
     @Test
-    public void ExistBucket_bucketExist() {
+    public void Exist_bucketExist() {
         // given
         boolean actualResult;
 
         // when
-        actualResult = dataObjectHelper.existBucket(bucketName);
+        actualResult = dataObjectHelper.exist();
 
         // then
         assertTrue(actualResult);
     }
 
     @Test
-    public void ExistBucket_bucketDoesntExist() {
+    public void Exist_ObjectIsPresent_Success() throws IOException {
         // given
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
         boolean actualResult;
 
         // when
-        actualResult = dataObjectHelper.existBucket("aled");
+        actualResult = this.dataObjectHelper.exist(this.image1);
 
         // then
-        assertFalse(actualResult);
-    }
-
-    @Test
-    public void ExistObject_ObjectIsPresent_Success() throws IOException {
-        // given
-        this.dataObjectHelper.createObject(this.image1, Files.readAllBytes(this.path1));
-        boolean actualResult;
-
-        // when
-        actualResult = this.dataObjectHelper.existObject(this.image1);
-
-        // then
+        this.dataObjectHelper.delete(this.image1);
         assertTrue(actualResult);
     }
 
     @Test
-    public void ExistObject_ObjectIsNotPresent_Success() {
+    public void Exist_ObjectIsNotPresent_Success() {
         // given
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
+        assertTrue(this.dataObjectHelper.exist());
         boolean actualResult;
 
         // when
-        actualResult = this.dataObjectHelper.existObject(this.image1);
+        actualResult = this.dataObjectHelper.exist(this.image1);
 
         // then
         assertFalse(actualResult);
     }
 
     @Test
-    public void CreateObject_CreateObjectWithExistingBucket_Success() throws IOException {
+    public void Create_CreateObjectWithExistingBucket_Success() throws IOException {
         // given
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
-        assertFalse(this.dataObjectHelper.existObject(this.image1));
+        assertTrue(this.dataObjectHelper.exist());
+        assertFalse(this.dataObjectHelper.exist(this.image1));
         Path path = Path.of(this.pathToTestFolder, this.image1);
 
         // when
-        this.dataObjectHelper.createObject(this.image1, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
 
         // then
-        assertTrue(this.dataObjectHelper.existObject(this.image1));
+        assertTrue(this.dataObjectHelper.exist(this.image1));
+        this.dataObjectHelper.delete(this.image1);
     }
 
     @Test
-    public void RemoveObject_RemoveNotExistingObject_Success() {
+    public void Delete_RemoveNotExistingObject_Success() {
         // given
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
+        assertTrue(this.dataObjectHelper.exist());
 
         // when
-        this.dataObjectHelper.removeObject(this.image1);
+        this.dataObjectHelper.delete(this.image1);
 
         // then
-        assertFalse(this.dataObjectHelper.existObject(this.image1));
+        assertFalse(this.dataObjectHelper.exist(this.image1));
     }
 
     @Test
-    public void RemoveObject_NotEmptyBucket_Success() throws IOException {
+    public void Delete_NotEmptyBucket_Success() throws IOException {
         // given
-        this.dataObjectHelper.createObject(this.image1, Files.readAllBytes(this.path1));
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
 
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
-        assertTrue(this.dataObjectHelper.existObject(this.image1));
+        assertTrue(this.dataObjectHelper.exist());
+        assertTrue(this.dataObjectHelper.exist(this.image1));
 
         // when
-        this.dataObjectHelper.removeObject(this.image1);
+        this.dataObjectHelper.delete(this.image1);
 
         // then
-        assertFalse(this.dataObjectHelper.existObject(this.image1));
+        assertFalse(this.dataObjectHelper.exist(this.image1));
     }
 
     @Test
-    public void UpdateObject_UpdateExistingObjectName() throws IOException {
+    public void Update_UpdateExistingObjectContent() throws IOException {
         // given
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
-        this.dataObjectHelper.createObject(this.image1, Files.readAllBytes(this.path1));
+        assertTrue(this.dataObjectHelper.exist());
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        Path path2 = Path.of(this.pathToTestFolder, this.fileText);
+        String exceptedValue = "Test file";
 
-        assertTrue(this.dataObjectHelper.existObject(this.image1));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        assertTrue(this.dataObjectHelper.exist(this.image1));
 
         // when
-        this.dataObjectHelper.updateObject(this.image1, this.newImageName);
+        this.dataObjectHelper.update(this.image1, Files.readAllBytes(path2));
+        String value = new String(this.dataObjectHelper.get(this.image1));
 
         // then
-        assertFalse(this.dataObjectHelper.existObject(this.image1));
-        assertTrue(this.dataObjectHelper.existObject(this.newImageName));
+        assertTrue(this.dataObjectHelper.exist(this.image1));
+        assertEquals(exceptedValue, value);
 
+        this.dataObjectHelper.delete(this.image1);
     }
 
     @Test
-    public void GetObject_GetExistingObject_Success() throws IOException {
+    public void Update_UpdateExistingObjectNameAndContent() throws IOException {
         // given
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
+        assertTrue(this.dataObjectHelper.exist());
+        Path path = Path.of(this.pathToTestFolder, this.image1);
+        Path path2 = Path.of(this.pathToTestFolder, this.fileText);
+        String exceptedValue = "Test file";
+
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        assertTrue(this.dataObjectHelper.exist(this.image1));
+
+        // when
+        this.dataObjectHelper.update(this.image1, Files.readAllBytes(path2), this.newImageName);
+        String value = new String(this.dataObjectHelper.get(this.newImageName));
+
+        // then
+        assertFalse(this.dataObjectHelper.exist(this.image1));
+        assertTrue(this.dataObjectHelper.exist(this.newImageName));
+        assertEquals(exceptedValue, value);
+
+        this.dataObjectHelper.delete(this.newImageName);
+    }
+
+    @Test
+    public void Get_GetExistingObject_Success() throws IOException {
+        // given
+        assertTrue(this.dataObjectHelper.exist());
         Path path = Path.of(this.pathToTestFolder, this.fileText);
-        this.dataObjectHelper.createObject(this.fileText, Files.readAllBytes(path));
-        assertTrue(this.dataObjectHelper.existObject(this.fileText));
+        this.dataObjectHelper.create(this.fileText, Files.readAllBytes(path));
+        assertTrue(this.dataObjectHelper.exist(this.fileText));
         String exceptedValue = "Test file";
 
         // when
-        String value = new String(this.dataObjectHelper.getObject(this.fileText));
+        String value = new String(this.dataObjectHelper.get(this.fileText));
 
         // then
         assertEquals(exceptedValue, value);
-
+        this.dataObjectHelper.delete(this.fileText);
     }
 
     @Test
-    public void GetObject_GetNotExistingObject_Success() throws IOException {
+    public void Get_GetNotExistingObject_Success() throws IOException {
         // given
-        assertTrue(this.dataObjectHelper.existBucket(this.bucketName));
+        assertTrue(this.dataObjectHelper.exist());
 
         // when
-        byte[] value = this.dataObjectHelper.getObject(this.fileText);
+        byte[] value = this.dataObjectHelper.get(this.fileText);
 
         // then
         assertNull(value);
     }
 
+    // TODO add labelization tests
 
 }
