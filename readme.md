@@ -17,7 +17,7 @@ Tout d'abord il vous faudra :
 
 ### Utilisation de Maven
 
-Afin de récupérer les dépendances il faut utiliser la commande : ```mvn dependency:resolve``` à la racine du projet.
+Clone le projet en locale puis, afin de récupérer les dépendances utiliser la commande : ```mvn dependency:resolve``` à la racine du projet.
 
 Avant d'installer le projet il est nécessaire d'avoir un fichier `.env` à la racine du projet, voici les champs qu'il doit contenir :
 
@@ -30,6 +30,8 @@ URL_DURATION =                  # Durée en minutes
 ```
 
 Pour la région, il faut qu'elle corresponde à la colonne `Region` du tableau disponible [ici](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html#Concepts.RegionsAndAvailabilityZones.Regions).
+
+Le fichier nommé `.env.tmp`, contient un exemple du `.env` nécessaire.
 
 Ensuite on peut installer le projet en utilisant la commande : ```mvn install```
 
