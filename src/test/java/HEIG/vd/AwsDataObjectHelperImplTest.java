@@ -13,8 +13,6 @@ import java.nio.file.Path;
 public class AwsDataObjectHelperImplTest {
 
     private final AwsCloudClient bucketManager = AwsCloudClient.getInstance();
-
-    private final String bucketName = bucketManager.getBucketUrl();
     private final AwsDataObjectHelperImpl dataObjectHelper = bucketManager.getDataObject();
     private final String pathToTestFolder = "./filesTest/";
     private final String image1 = "file1.jpg";
@@ -24,20 +22,20 @@ public class AwsDataObjectHelperImplTest {
 
     private final Path path1 = Path.of(this.pathToTestFolder, this.image1);
     private final Path path2 = Path.of(this.pathToTestFolder, this.image2);
-
+    private final Path path3 = Path.of(this.pathToTestFolder, this.fileText);
 
     @AfterEach
     public void cleanUpEach(){
-        if(dataObjectHelper.exist(this.image1)){
+        if(this.dataObjectHelper.exist(this.image1)){
             this.dataObjectHelper.delete(this.image1);
         }
-        if(dataObjectHelper.exist(this.image2)){
+        if(this.dataObjectHelper.exist(this.image2)){
             this.dataObjectHelper.delete(this.image2);
         }
-        if(dataObjectHelper.exist(this.newImageName)){
+        if(this.dataObjectHelper.exist(this.newImageName)){
             this.dataObjectHelper.delete(this.newImageName);
         }
-        if(dataObjectHelper.exist(this.fileText)){
+        if(this.dataObjectHelper.exist(this.fileText)){
             this.dataObjectHelper.delete(this.fileText);
         }
     }
@@ -76,35 +74,29 @@ public class AwsDataObjectHelperImplTest {
         assertEquals(listBuckets, actualResult);
     }
 
-
-    //TODO REVIEW Rewrite test signature (method_scenario_expectedResult)
     @Test
-    public void List_Success() throws IOException {
+    public void List_ListAllObjects_Success() throws IOException {
         // given
         String listObjects = "file1.jpg\n" + "file2.jpg\n";
 
-
-        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path1));
-        this.dataObjectHelper.create(this.image2, Files.readAllBytes(path2));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(this.path1));
+        this.dataObjectHelper.create(this.image2, Files.readAllBytes(this.path2));
         String actualResult;
 
         // when
-        actualResult = dataObjectHelper.list();
-
-        this.dataObjectHelper.delete(this.image1);
-        this.dataObjectHelper.delete(this.image2);
+        actualResult = this.dataObjectHelper.list();
 
         // then
         assertEquals(listObjects, actualResult);
     }
 
     @Test
-    public void Exist_bucketExist() {
+    public void Exist_bucketExist_Success() {
         // given
         boolean actualResult;
 
         // when
-        actualResult = dataObjectHelper.exist();
+        actualResult = this.dataObjectHelper.exist();
 
         // then
         assertTrue(actualResult);
@@ -113,8 +105,7 @@ public class AwsDataObjectHelperImplTest {
     @Test
     public void Exist_ObjectIsPresent_Success() throws IOException {
         // given
-        Path path = Path.of(this.pathToTestFolder, this.image1);
-        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(this.path1));
         boolean actualResult;
 
         // when
@@ -143,14 +134,12 @@ public class AwsDataObjectHelperImplTest {
         // given
         assertTrue(this.dataObjectHelper.exist());
         assertFalse(this.dataObjectHelper.exist(this.image1));
-        Path path = Path.of(this.pathToTestFolder, this.image1);
 
         // when
-        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(this.path1));
 
         // then
         assertTrue(this.dataObjectHelper.exist(this.image1));
-        this.dataObjectHelper.delete(this.image1);
     }
 
     @Test
@@ -168,8 +157,7 @@ public class AwsDataObjectHelperImplTest {
     @Test
     public void Delete_NotEmptyBucket_Success() throws IOException {
         // given
-        Path path = Path.of(this.pathToTestFolder, this.image1);
-        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(this.path1));
 
         assertTrue(this.dataObjectHelper.exist());
         assertTrue(this.dataObjectHelper.exist(this.image1));
@@ -182,56 +170,47 @@ public class AwsDataObjectHelperImplTest {
     }
 
     @Test
-    public void Update_UpdateExistingObjectContent() throws IOException {
+    public void Update_UpdateExistingObjectContent_Success() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
-        Path path = Path.of(this.pathToTestFolder, this.image1);
-        Path path2 = Path.of(this.pathToTestFolder, this.fileText);
         String exceptedValue = "Test file";
 
-        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(this.path1));
         assertTrue(this.dataObjectHelper.exist(this.image1));
 
         // when
-        this.dataObjectHelper.update(this.image1, Files.readAllBytes(path2));
+        this.dataObjectHelper.update(this.image1, Files.readAllBytes(this.path3));
         String value = new String(this.dataObjectHelper.get(this.image1));
 
         // then
         assertTrue(this.dataObjectHelper.exist(this.image1));
         assertEquals(exceptedValue, value);
-
-        this.dataObjectHelper.delete(this.image1);
     }
 
     @Test
-    public void Update_UpdateExistingObjectNameAndContent() throws IOException {
+    public void Update_UpdateExistingObjectNameAndContent_Success() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
-        Path path = Path.of(this.pathToTestFolder, this.image1);
-        Path path2 = Path.of(this.pathToTestFolder, this.fileText);
         String exceptedValue = "Test file";
 
-        this.dataObjectHelper.create(this.image1, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.image1, Files.readAllBytes(this.path1));
         assertTrue(this.dataObjectHelper.exist(this.image1));
 
         // when
-        this.dataObjectHelper.update(this.image1, Files.readAllBytes(path2), this.newImageName);
+        this.dataObjectHelper.update(this.image1, Files.readAllBytes(this.path3), this.newImageName);
         String value = new String(this.dataObjectHelper.get(this.newImageName));
 
         // then
         assertFalse(this.dataObjectHelper.exist(this.image1));
         assertTrue(this.dataObjectHelper.exist(this.newImageName));
         assertEquals(exceptedValue, value);
-
-        this.dataObjectHelper.delete(this.newImageName);
     }
 
     @Test
     public void Get_GetExistingObject_Success() throws IOException {
         // given
         assertTrue(this.dataObjectHelper.exist());
-        Path path = Path.of(this.pathToTestFolder, this.fileText);
-        this.dataObjectHelper.create(this.fileText, Files.readAllBytes(path));
+        this.dataObjectHelper.create(this.fileText, Files.readAllBytes(this.path3));
         assertTrue(this.dataObjectHelper.exist(this.fileText));
         String exceptedValue = "Test file";
 
@@ -240,11 +219,10 @@ public class AwsDataObjectHelperImplTest {
 
         // then
         assertEquals(exceptedValue, value);
-        this.dataObjectHelper.delete(this.fileText);
     }
 
     @Test
-    public void Get_GetNotExistingObject_Success() throws IOException {
+    public void Get_GetNotExistingObject_Success() {
         // given
         assertTrue(this.dataObjectHelper.exist());
 
@@ -254,7 +232,5 @@ public class AwsDataObjectHelperImplTest {
         // then
         assertNull(value);
     }
-
-    // TODO add labelization tests
 
 }
