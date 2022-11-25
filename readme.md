@@ -12,18 +12,36 @@ Assistant : Adrien Allemand
 
 Tout d'abord il vous faudra :
 
-- java version 17 (disponible ici : https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-- Maven version 3.8 (disponible ici : https://maven.apache.org/download.cgi)
+- java version 17 (disponible [ici](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html))
+- Maven version 3.8 (disponible [ici](https://maven.apache.org/download.cgi))
 
 ### Utilisation de Maven
 
-> TODO votre commande run les tests ce qui n'est pas désirable à cette étape
+Clone le projet en locale puis, afin de récupérer les dépendances utiliser la commande : ```mvn dependency:resolve``` à la racine du projet.
 
-Après avoir clone le repository, il faut installer les différentes dépendances via la commande : ```mvn clean install```
+Avant d'installer le projet il est nécessaire d'avoir un fichier `.env` à la racine du projet, voici les champs qu'il doit contenir :
 
-> TODO La commande est juste mais impossible a run a cause du problème de .env qui est pas pris en compte
+```
+AWS_ACCESS_KEY_ID =
+AWS_SECRET_ACCESS_KEY =
+REGION = 
+BUCKET =
+URL_DURATION =                  # Durée en minutes
+```
+
+Pour la région, il faut qu'elle corresponde à la colonne `Region` du tableau disponible [ici](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html#Concepts.RegionsAndAvailabilityZones.Regions).
+
+Le fichier nommé `.env.tmp`, contient un exemple du `.env` nécessaire.
+
+Ensuite on peut installer le projet en utilisant la commande : ```mvn install```
+
+Cette commande lancera aussi les tests, si vous ne désirez pas les lancer, utilisez plutôt cette variante : ```mvn install -DskipTests```
+
+### Création d'un package
 
 Pour créer un package du projet avec maven-assembly, il faut utiliser la commande ```mvn package``` qui créera un .jar dans le dossier ```target``` qui se trouve à la racine du projet.
+
+De nouveau il sera nécessaire d'avoir le `.env` correctement configuré à la racine du projet.
 
 Pour l'instant le .jar effectue une suite de commande prédéfinie :
 - On se connecte à AWS
@@ -45,16 +63,7 @@ Afin de lancer le .jar sans encombre, voici à quoi doit ressembler le répertoi
 
 ### AWS
 
-Afin de pouvoir utiliser les services de AWS (AWS S3 et AWS Rekognition Label) nous avons décidé d'utiliser un fichier d'environnement pour load les credentials d'AWS. 
-Il faut donc avoir un fichier ```.env``` à la racine du projet qui doit ressembler à cela :
-```
-AWS_ACCESS_KEY=...
-AWS_SECRET_KEY=...
-REGION=...
-BUCKET=...
-```
-
-> TODO fix votre implémetation ou vos explications, Il ne charge pas les variables d'env avec le fichier metionné, je n'ai pas réussi a le faire fonctionner.
+Comme dit précédemment afin de pouvoir utiliser les services de AWS (AWS S3 et AWS Rekognition Label) nous avons décidé d'utiliser un fichier d'environnement pour load les credentials d'AWS.
 
 Il est aussi nécessaire d'avoir un utilisateur IAM possédant ces droits :
 
@@ -85,13 +94,9 @@ Il est aussi nécessaire d'avoir un utilisateur IAM possédant ces droits :
 
 ### Tests
 
-> TODO La commande est juste mais impossible a run a cause du problème de .env qui est pas pris en compte
-> 
 Nous utilisons JUnit pour tester notre programme, il est possible de lancer les tests automatiquement à l'aide de Maven en utilisant la commande ```mvn test```.
 
 Nous avons mis en pratique une approche BDD (given, when, then) pour l'écriture des tests.
-
-> TODO pas de tests sur le label detection ?
 
 ### Annexes
 
@@ -103,7 +108,7 @@ Un wiki est disponible dans le repository avec ces différentes rubriques :
 
 ## Utilisation du .jar dans une instance Amazone EC2
 
-Voici les commandes à exécuter sur la machine debian:
+Voici les commandes à exécuter sur la machine Debian:
 
 ```
 cd app/
