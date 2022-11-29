@@ -15,6 +15,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import java.net.URL;
 import java.time.Duration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class AwsDataObjectHelperImpl implements IDataObjectHelper {
@@ -91,7 +93,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
             cloudClient.headBucket(hbReq);
             return true;
         }catch (S3Exception e) {
-            //TODO REVIEW Choose. Catch or return.
+            Logger.getLogger(AwsDataObjectHelperImpl.class.getName()).log(Level.WARNING, e.getMessage());
             return false;
         }
     }
@@ -107,6 +109,7 @@ public class AwsDataObjectHelperImpl implements IDataObjectHelper {
             cloudClient.getObject(goReq);
             return true;
         } catch (S3Exception e) {
+            Logger.getLogger(AwsDataObjectHelperImpl.class.getName()).log(Level.WARNING, e.getMessage());
             return false;
         }
     }
