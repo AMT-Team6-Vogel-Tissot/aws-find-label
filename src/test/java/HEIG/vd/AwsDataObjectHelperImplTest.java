@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+//TODO NGY recheck the test coverage (iceScrum https://icescrum.cpnv.ch/p/AMTLABO/#/planning/2619/story/5856/tests)
 public class AwsDataObjectHelperImplTest {
 
     private final AwsCloudClient bucketManager = AwsCloudClient.getInstance();
@@ -74,6 +75,7 @@ public class AwsDataObjectHelperImplTest {
         assertEquals(listObjects, actualResult);
     }
 
+    //TODO NGY Method signature is not bdd
     @Test
     public void ExistBucket_bucketExist(){
         //given
@@ -86,6 +88,7 @@ public class AwsDataObjectHelperImplTest {
         assertTrue(actualResult);
     }
 
+    //TODO NGY Method signature is not bdd
     @Test
     public void ExistBucket_bucketDoesntExist(){
         //given
@@ -98,6 +101,7 @@ public class AwsDataObjectHelperImplTest {
         assertFalse(actualResult);
     }
 
+    //TODO NGY This test is not required
     @Test
     public void ExistObject_ObjectIsPresent_Success() throws IOException {
         //given
@@ -138,6 +142,8 @@ public class AwsDataObjectHelperImplTest {
 
         //then
         assertTrue(this.dataObjectHelper.existObject(this.image1));
+
+        //TODO NGY remove object must be moved in Tear down method
         this.dataObjectHelper.removeObject(this.image1);
     }
 
@@ -186,6 +192,7 @@ public class AwsDataObjectHelperImplTest {
         assertFalse(this.dataObjectHelper.existObject(this.image1));
         assertTrue(this.dataObjectHelper.existObject(this.newImageName));
 
+        //TODO NGY remove object must be moved in Tear down method
         this.dataObjectHelper.removeObject(this.newImageName);
     }
 
@@ -203,6 +210,8 @@ public class AwsDataObjectHelperImplTest {
 
         //then
         assertEquals(exceptedValue, value);
+
+        //TODO NGY remove object must be moved in Tear down method
         this.dataObjectHelper.removeObject(this.fileText);
     }
 
@@ -215,6 +224,7 @@ public class AwsDataObjectHelperImplTest {
         byte[] value = this.dataObjectHelper.getObject(this.fileText);
 
         //then
+        //TODO oooppsss. Why did you test "Null". If you get bytes, it should be not null ?
         assertNull(value);
     }
 
